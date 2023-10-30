@@ -21,8 +21,8 @@ jobs:
           echo 'blank_issues_enabled: false' > .github/ISSUE_TEMPLATE/config.yml
           cp form.{yml,yaml} .github/ISSUE_TEMPLATE
       - run: mv README.adoc README-OLD.adoc || true
-      - run: mv {0} README.adoc
-      - run: |
+      - shell: mv {0} README.adoc
+        run: |
           ++++
           <p align=center>
             <b><a href="../../issues/new/choose">Finish setting up your repository</a></b>
