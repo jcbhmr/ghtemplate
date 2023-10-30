@@ -1,8 +1,0 @@
-# https://github.com/jcbhmr/ghtemplate
-name: ghtemplate
-on: push
-jobs:
-  ghtemplate:
-    permissions: write-all
-    uses: ./.github/workflows/workflow.yml
-    secrets: inherit
