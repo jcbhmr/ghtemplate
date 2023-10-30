@@ -34,12 +34,10 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           shopt -s extglob
-          rm -rf !(.git|setup|template|.github)
+          rm -rf !(.git|src|.github)
           (cd .github && rm -rf !(workflows))
           (cd .github/workflows && rm -rf !(*.yml))
-      - run: |
-          rsync -av --exclude=.github/workflows/*.yml setup/ ./
-          rm -rf setup/
+      - run: rsync -av --exclude=.github/workflows/*.yml src/ ./ && rm -rf src/
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -56,8 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: git branch ghtemplate/init
-      - run: shopt -s extglob && rm -rf !(.git|template)
-      - run: rsync -av template/ ./ && rm -rf template/
+      - uses: ./
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
