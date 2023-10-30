@@ -1,35 +1,86 @@
 # https://github.com/jcbhmr/ghtemplate
 name: ghtemplate
+run-name: ghtemplate
 on:
   create:
   issues:
     types: opened
-  push:
 jobs:
-  ghtemplate:
-    permissions: write-all
-    # secrets: inherit
-    # uses: jcbhmr/ghtemplate/.github/workflows/workflow.yml@v1
-    # with:
-    #   inputs: |
-    #     name:
-    #       type: string
-    #       required: true
-    #     favorite-ice-cream:
-    #       type: choice
-    #       options:
-    #         - vanilla
-    #         - chocolate
-    #         - strawberry
-    #   run: |
-    #     pip install cookiecutter
-    #     cookiecutter ./cookiecutter/
-    if: true
+  count-commits:
+    if: github.event_name == 'create'
+    outputs:
+      commit-count: ${{ fromJSON(steps.count-commits.output.commit-count) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # https://stackoverflow.com/questions/1838873/visualizing-branch-topology-in-git
-      - run: git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
-      - run: pip install cookiecutter
-      - shell: cat {0}
-        run: ${{ toJSON(github.event) }}
+      - id: count-commits
+        run: |
+          commit_count=$(git rev-list --count HEAD)
+          echo "commit_count=$commit_count" >> "$GITHUB_OUTPUT"
+  add-input-form:
+    needs: count-commits
+    if: needs.count-commits.outputs.commit-count <= 1
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: cp -f {0} .github/ISSUE_TEMPLATE/ghtemplate.yml
+        run: |
+          name: 📋 ghtemplate
+          description: Finish setting up your new repository
+          title: "ghtemplate"
+          body:
+            - type: input
+              id: name
+              attributes:
+                label: What's your name?
+                description: This will be used to greet you in the example readme.
+                placeholder: Octocat
+              validations:
+                required: true
+            - type: dropdown
+              id: favorite-ice-cream
+              attributes:
+                label: What's your favorite ice cream flavor?
+                options:
+                  - Vanilla
+                  - Chocolate
+                  - Strawberry
+            - type: checkboxes
+              id: liked-colors
+              attributes:
+                label: Which of the following colors do you like?
+                description: You can check multiple!
+                options:
+                  - label: Read
+                  - label: Orange
+                  - label: Yellow
+                  - label: Green
+                  - label: Blue
+                  - label: Indigo
+                  - label: Violet
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - run: |
+          git add -A
+          git commit -m 'Add input form' || true
+      - run: git push
+  instantiate-template:
+    if: github.event_name == 'issue' && github.event.issue.title == 'ghtemplate'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rm -rf .github README.md
+      - run: git branch instantiate-template
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - run: |
+          git add -A
+          git commit -m 'Instantiate template' || true
+      - run: git push -u origin instantiate-template
+      - run: gh pr create --fill
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
