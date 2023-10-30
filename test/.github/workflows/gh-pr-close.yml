@@ -4,6 +4,7 @@ on:
     types: [opened, reopened]
 jobs:
   gh-pr-close:
+    if: github.repository == 'jcbhmr/ghtemplate-test'
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
