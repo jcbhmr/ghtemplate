@@ -22,7 +22,7 @@ jobs:
           cp form.{yml,yaml} .github/ISSUE_TEMPLATE
       - run: mv README.adoc README-OLD.adoc || true
       - run: mv {0} README.adoc
-        run: |
+      - run: |
           ++++
           <p align=center>
             <b><a href="../../issues/new/choose">Finish setting up your repository</a></b>
