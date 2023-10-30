@@ -8,7 +8,9 @@ on:
     types: opened
 jobs:
   job-1:
-    if: github.event_name == 'create' && github.event.ref_type == 'repository'
+    if: >
+      github.event_name == 'create' &&
+      !github.event.repository.is_template
     permissions:
       contents: write
     runs-on: ubuntu-latest
