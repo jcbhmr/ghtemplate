@@ -23,7 +23,9 @@ jobs:
           git config user.name 'GitHub Actions'
           git config user.email 'actions@github.com'
         working-directory: ghtemplate-test
-      - run: git add -A
+      - run: |
+          git add -A
+          git commit -m 'Sync ghtemplate/test/'
         working-directory: ghtemplate-test
       - run: git push
         working-directory: ghtemplate-test
