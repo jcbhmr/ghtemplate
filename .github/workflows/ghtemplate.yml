@@ -2,12 +2,27 @@
 # MIT License
 # Copyright (c) 2023 Jacob Hummer
 name: ghtemplate
+run-name: >
+  ghtemplate:
+  ${{
+    (
+      !github.event.repository.is_template &&
+      github.event_name == 'create' &&
+      github.event.ref == github.event.master_branch
+    ) && 'setup'
+    || (
+      !github.event.repository.is_template &&
+      github.event_name == 'issue' &&
+      github.event.issue.title == 'ghtemplate'
+    ) && 'instantiate'
+    || 'skipped'
+  }}
 on:
   create:
   issues:
     types: opened
 jobs:
-  job-1:
+  setup:
     if: >
       !github.event.repository.is_template &&
       github.event_name == 'create' &&
@@ -16,21 +31,21 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - shell: jq . {0}
-        run: ${{ toJSON(github) }}
       - uses: actions/checkout@v4
       - run: |
-          rm -rf .github/ISSUE_TEMPLATE/
-          mv -f .github/ISSUE_TEMPLATE-TEMPLATE/ .github/ISSUE_TEMPLATE/
-      - run: rm -rf README.markdown LICENSE-TEMPLATE
+          shopt -s extglob
+          rm -rf !(.git|setup|template|.github)
+          (cd .github && rm -rf !(workflows))
+          (cd .github/workflows && rm -rf !(*.yml))
+      - run: |
+          rsync -av --exclude=.github/workflows/*.yml setup/ ./
+          rm -rf setup/
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-      - run: |
-          git add -A
-          git commit -m 'Initial commit 2' || true
+      - run: git add -A && git commit -m 'Initial commit 2' || true
       - run: git push
-  job-2:
+  instantiate:
     if: >
       !github.event.repository.is_template &&
       github.event_name == 'issue' &&
@@ -39,17 +54,14 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - shell: jq . {0}
-        run: ${{ toJSON(github) }}
       - uses: actions/checkout@v4
-      - run: rm -rf * .*
       - run: git branch ghtemplate/init
+      - run: shopt -s extglob && rm -rf !(.git|template)
+      - run: rsync -av template/ ./ && rm -rf template/
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-      - run: |
-          git add -A
-          git commit -m 'Initial commit 3' || true
+      - run: git add -A && git commit -m 'Initial commit 3' || true
       - run: git push -u origin ghtemplate/init
       - run: gh pr create --fill
         env:
