@@ -1,0 +1,34 @@
+# https://github.com/jcbhmr/ghtemplate
+name: ghtemplate
+on:
+  create:
+  issues:
+    types: opened
+jobs:
+  ghtemplate:
+    permissions: write-all
+    # secrets: inherit
+    # uses: jcbhmr/ghtemplate/.github/workflows/workflow.yml@v1
+    # with:
+    #   inputs: |
+    #     name:
+    #       type: string
+    #       required: true
+    #     favorite-ice-cream:
+    #       type: choice
+    #       options:
+    #         - vanilla
+    #         - chocolate
+    #         - strawberry
+    #   run: |
+    #     pip install cookiecutter
+    #     cookiecutter ./cookiecutter/
+    if: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # https://stackoverflow.com/questions/1838873/visualizing-branch-topology-in-git
+      - run: log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+      - run: pip install cookiecutter
+      - shell: cat {0}
+        run: ${{ toJSON(github.event) }}

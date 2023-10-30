@@ -1,0 +1,29 @@
+name: Sync ghtemplate/test/
+on:
+  push:
+    branches: "main"
+    paths:
+      - test/**
+      - .github/workflows/sync-ghtemplate-test.yml
+concurrency: ${{ github.workflow }}
+jobs:
+  sync-ghtemplate-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ghtemplate
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHTEMPLATE_TEST_TOKEN }}
+          repository: jcbhmr/ghtemplate-test
+          path: ghtemplate-test
+      - run: rsync -av --delete --exclude=.git ghtemplate/test/ ghtemplate-test/
+      - run: |
+          git config user.name 'GitHub Actions'
+          git config user.email 'actions@github.com'
+        working-directory: ghtemplate-test
+      - run: git add -A
+        working-directory: ghtemplate-test
+      - run: git push
+        working-directory: ghtemplate-test
