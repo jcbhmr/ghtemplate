@@ -2,7 +2,6 @@
 # MIT License
 # Copyright (c) 2023 Jacob Hummer
 name: ghtemplate
-run-name: ghtemplate
 on:
   push:
   issues:
@@ -15,7 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: mv instantiate-template.yml .github/ISSUE_TEMPLATE/instantiate-template.yml
+      - shell: jq {0}
+        run: ${{ toJSON(github) }}
+      - run: |
+          mkdir -p .github/ISSUE_TEMPLATE
+          mv -f instantiate-template.yml .github/ISSUE_TEMPLATE/instantiate-template.yml
       - run: rm README.markdown LICENSE-TEMPLATE
       - run: |
           git config user.name 'github-actions[bot]'
