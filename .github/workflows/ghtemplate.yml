@@ -1,78 +1,35 @@
 # https://github.com/jcbhmr/ghtemplate
+# MIT License
+# Copyright (c) 2023 Jacob Hummer
 name: ghtemplate
 run-name: ghtemplate
 on:
-  create:
+  push:
   issues:
     types: opened
 jobs:
-  count-commits:
-    if: github.event_name == 'create'
-    outputs:
-      commit-count: ${{ fromJSON(steps.count-commits.output.commit-count) }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - id: count-commits
-        run: |
-          commit_count=$(git rev-list --count HEAD)
-          echo "commit-count=$commit_count" >> "$GITHUB_OUTPUT"
-  add-input-form:
-    needs: count-commits
-    if: needs.count-commits.outputs.commit-count <= 1
+  add-form:
+    if: github.event.before == '0000000000000000000000000000000000000000'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - shell: cp -f {0} .github/ISSUE_TEMPLATE/ghtemplate.yml
-        run: |
-          name: 📋 ghtemplate
-          description: Finish setting up your new repository
-          title: "ghtemplate"
-          body:
-            - type: input
-              id: name
-              attributes:
-                label: What's your name?
-                description: This will be used to greet you in the example readme.
-                placeholder: Octocat
-              validations:
-                required: true
-            - type: dropdown
-              id: favorite-ice-cream
-              attributes:
-                label: What's your favorite ice cream flavor?
-                options:
-                  - Vanilla
-                  - Chocolate
-                  - Strawberry
-            - type: checkboxes
-              id: liked-colors
-              attributes:
-                label: Which of the following colors do you like?
-                description: You can check multiple!
-                options:
-                  - label: Read
-                  - label: Orange
-                  - label: Yellow
-                  - label: Green
-                  - label: Blue
-                  - label: Indigo
-                  - label: Violet
+      - run: mv instantiate-template.yml .github/ISSUE_TEMPLATE/instantiate-template.yml
+      - run: rm README.markdown LICENSE-TEMPLATE
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - run: |
           git add -A
-          git commit -m 'Add input form' || true
+          git commit -m 'Add form' || true
       - run: git push
   instantiate-template:
     if: github.event_name == 'issue' && github.event.issue.title == 'ghtemplate'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: rm -rf .github README.md
+      - run: rm -rf * .*
       - run: git branch instantiate-template
       - run: |
           git config user.name 'github-actions[bot]'

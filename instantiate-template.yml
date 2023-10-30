@@ -1,0 +1,38 @@
+name: 📋 Instantiate template
+description: Finish setting up your new repository
+title: "Instantiate template"
+body:
+  - type: markdown
+    attributes:
+      value: >
+        **Do not edit the title of this Issue.** It must be `Instantiate
+        template` for the magic GitHub Action to see it.
+  - type: input
+    id: name
+    attributes:
+      label: What's would you like to be called?
+      description: This could be your name, a nickname, your username, or anything.
+      placeholder: Octocat
+    validations:
+      required: true
+  - type: dropdown
+    id: favorite-ice-cream
+    attributes:
+      label: What's your favorite ice cream flavor?
+      options:
+        - Vanilla
+        - Chocolate
+        - Strawberry
+  - type: checkboxes
+    id: liked-colors
+    attributes:
+      label: Which of the following colors do you like?
+      description: You can check multiple!
+      options:
+        - label: Read
+        - label: Orange
+        - label: Yellow
+        - label: Green
+        - label: Blue
+        - label: Indigo
+        - label: Violet
