@@ -1,21 +1,58 @@
-name: Handle 'Setup' form
+name: ghtemplate
 on:
+  create:
   issues:
     types: opened
 jobs:
-  handle-setup-form:
+  prepare-setup-form:
     if: |
+      github.event_name == 'create' &&
       !github.event.repository.is_template &&
       !github.event.repository.is_fork &&
-      github.event.issue.title == 'ghtemplate'
+      github.event.ref == github.event.master_branch
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mv .github/ISSUE_TEMPLATE .github/ISSUE_TEMPLATE-OLD || true
+          mkdir .github/ISSUE_TEMPLATE
+          echo 'blank_issues_enabled: false' > .github/ISSUE_TEMPLATE/config.yml
+          mv form.yml .github/ISSUE_TEMPLATE
+      - run: mv README.adoc README-OLD.adoc || true
+      - run: mv {0} README.adoc
+        run: |
+          ++++
+          <p align=center>
+            <b><a href="../../issues/new/choose">Finish setting up your repository</a></b>
+          </p>
+          ++++
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - run: git add -A && git commit -m "Prepare 'Setup' form" || true
+      - run: git push
+
+  handle-setup-form:
+    if: |
+      github.event_name == 'issues' &&
+      !github.event.repository.is_template &&
+      !github.event.repository.is_fork
     permissions:
       contents: write
       issues: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - id: issue-form-parser
         uses: onmax/issue-form-parser@v1.4
+      - uses: actions/checkout@v4
+      - run: |
+          rm -rf .github/ISSUE_TEMPLATE
+          mv .github/ISSUE_TEMPLATE-OLD .github/ISSUE_TEMPLATE || true
+      - run: |
+          rm -f README.adoc
+          mv README-OLD.adoc README.adoc || true
       - run: mkdir /tmp/repo && mv * .* /tmp/repo || true
       - run: mv /tmp/repo/.git .
       - id: get-mode
@@ -51,7 +88,15 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - run: git add -A && git commit --allow-empty -m "Handle 'Setup' form"
       - run: git push
-      - run: gh issue close "$NUMBER"
+      - run: gh issue close "$NUMBER" --comment "$COMMENT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NUMBER: ${{ github.event.issue.number }}
+          COMMENT: >
+            You repository has been initialized! Make sure you **manually**
+            delete the `.github/workflows/` folder and rename the
+            `.github/workflows-NEW/` folder to `.github/workflows/`.
+
+            <sup>You need to do this manually since GitHub Actions workflows
+            can't edit other GitHub Actions workflows without a Personal Access
+            Token.</sup>

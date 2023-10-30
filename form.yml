@@ -2,11 +2,6 @@ name: Setup
 description: Finish setting up your new repository
 title: "Setup"
 body:
-  - type: markdown
-    attributes:
-      value: >
-        **Do not edit the title of this Issue.** It must be `Instantiate
-        template` for the magic GitHub Action to see it.
   - type: input
     id: name
     attributes:
