@@ -65,7 +65,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - run: git add -A && git commit -m 'Initial commit 4' || true
-      - uses: /tmp/setup
+      - uses: ../../../../../../../../../../tmp/setup
         with: ${{ fromJSON('{}') }}
       - run: |
           git config user.name 'github-actions[bot]'
