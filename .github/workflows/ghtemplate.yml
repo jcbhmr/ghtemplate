@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - shell: jq {0}
+      - shell: jq . {0}
         run: ${{ toJSON(github) }}
       - run: |
           mkdir -p .github/ISSUE_TEMPLATE
