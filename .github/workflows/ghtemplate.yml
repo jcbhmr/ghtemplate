@@ -16,7 +16,7 @@ jobs:
       - id: count-commits
         run: |
           commit_count=$(git rev-list --count HEAD)
-          echo "commit_count=$commit_count" >> "$GITHUB_OUTPUT"
+          echo "commit-count=$commit_count" >> "$GITHUB_OUTPUT"
   add-input-form:
     needs: count-commits
     if: needs.count-commits.outputs.commit-count <= 1
