@@ -9,8 +9,9 @@ on:
 jobs:
   job-1:
     if: >
+      !github.event.repository.is_template &&
       github.event_name == 'create' &&
-      !github.event.repository.is_template
+      github.event.ref == github.event.master_branch
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -30,7 +31,10 @@ jobs:
           git commit -m 'Initial commit 2' || true
       - run: git push
   job-2:
-    if: github.event_name == 'issue' && github.event.issue.title == 'ghtemplate'
+    if: >
+      !github.event.repository.is_template &&
+      github.event_name == 'issue' &&
+      github.event.issue.title == 'ghtemplate'
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
