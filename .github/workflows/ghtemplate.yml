@@ -3,44 +3,48 @@
 # Copyright (c) 2023 Jacob Hummer
 name: ghtemplate
 on:
-  push:
+  create:
   issues:
     types: opened
 jobs:
-  add-form:
-    if: github.event.before == '0000000000000000000000000000000000000000'
+  job-1:
+    if: github.event_name == 'create' && github.event.ref_type == 'repository'
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - shell: jq . {0}
         run: ${{ toJSON(github) }}
+      - uses: actions/checkout@v4
       - run: |
-          mkdir -p .github/ISSUE_TEMPLATE
-          mv -f instantiate-template.yml .github/ISSUE_TEMPLATE/instantiate-template.yml
-      - run: rm README.markdown LICENSE-TEMPLATE
+          rm -rf .github/ISSUE_TEMPLATE/
+          mv -f .github/ISSUE_TEMPLATE-TEMPLATE/ .github/ISSUE_TEMPLATE/
+      - run: rm -rf README.markdown LICENSE-TEMPLATE
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - run: |
           git add -A
-          git commit -m 'Add form' || true
+          git commit -m 'Initial commit 2' || true
       - run: git push
-  instantiate-template:
+  job-2:
     if: github.event_name == 'issue' && github.event.issue.title == 'ghtemplate'
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - shell: jq . {0}
+        run: ${{ toJSON(github) }}
       - uses: actions/checkout@v4
       - run: rm -rf * .*
-      - run: git branch instantiate-template
+      - run: git branch ghtemplate/init
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - run: |
           git add -A
-          git commit -m 'Instantiate template' || true
-      - run: git push -u origin instantiate-template
+          git commit -m 'Initial commit 3' || true
+      - run: git push -u origin ghtemplate/init
       - run: gh pr create --fill
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
