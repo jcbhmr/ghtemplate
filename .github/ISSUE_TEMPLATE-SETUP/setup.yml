@@ -1,6 +1,6 @@
-name: 📋 Instantiate template
+name: Setup
 description: Finish setting up your new repository
-title: "Instantiate template"
+title: "Setup"
 body:
   - type: markdown
     attributes:

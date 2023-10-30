@@ -1,0 +1,24 @@
+name: Prepare 'Setup' form
+on: create
+jobs:
+  prepare-setup-form:
+    if: |
+      !github.event.repository.is_template &&
+      !github.event.repository.is_fork &&
+      github.event.ref == github.event.master_branch
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mv .github/ISSUE_TEMPLATE .github/ISSUE_TEMPLATE-OLD || true
+          mv .github/ISSUE_TEMPLATE-SETUP .github/ISSUE_TEMPLATE
+      - run: |
+          mv README.md README-OLD.md || true
+          mv README-SETUP.md README.md
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - run: git add -A && git commit -m "Prepare 'Setup' form" || true
+      - run: git push

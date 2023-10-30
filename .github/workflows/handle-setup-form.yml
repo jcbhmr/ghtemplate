@@ -1,0 +1,57 @@
+name: Handle 'Setup' form
+on:
+  issues:
+    types: opened
+jobs:
+  handle-setup-form:
+    if: |
+      !github.event.repository.is_template &&
+      !github.event.repository.is_fork &&
+      github.event.issue.title == 'ghtemplate'
+    permissions:
+      contents: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: issue-form-parser
+        uses: onmax/issue-form-parser@v1.4
+      - run: mkdir /tmp/repo && mv * .* /tmp/repo || true
+      - run: mv /tmp/repo/.git .
+      - id: get-mode
+        run: |
+          [[ -f action.yml || -f action.yaml ]] && mode=action || true
+          [[ -f install.sh || -f install || -f bootstrap.sh || -f bootstrap || -f script/bootstrap || -f setup.sh || -f setup || script/setup ]] && mode=script || true
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+        working-directory: /tmp/repo
+      - if: steps.get-mode.outputs.mode == 'action'
+        uses: ./../../../../../../../../../../tmp/repo
+        with: ${{ fromJSON(steps.parse.outputs.payload) }}
+      - id: get-input-env
+        if: steps.get-mode.outputs.mode == 'script'
+        run: |
+          input_env=$(echo "$INPUTS" | jq \
+            'to_entries
+            | map({key: "INPUT_" + .key | ascii_upcase, value})
+            | from_entries')
+          echo "input-env=$input_env" >> "$GITHUB_OUTPUT"
+        env:
+          INPUTS: ${{ steps.parse.outputs.payload }}
+      - if: steps.get-mode.outputs.mode == 'script'
+        run: |
+          for file in install.sh install bootstrap.sh bootstrap script/bootstrap setup.sh setup script/setup; do
+            [[ -f "/tmp/repo/$file" ]] || continue
+            chmod +x "/tmp/repo/$file"
+            "/tmp/repo/$file"
+            break
+          done
+        env: ${{ fromJSON(steps.get-input-env.outputs.input-env) }}
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - run: git add -A && git commit --allow-empty -m "Handle 'Setup' form"
+      - run: git push
+      - run: gh issue close "$NUMBER"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
