@@ -52,6 +52,9 @@ jobs:
       - run: |
           rm -rf .github/ISSUE_TEMPLATE
           mv .github/ISSUE_TEMPLATE-OLD .github/ISSUE_TEMPLATE || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
       - run: |
           rm -f README.adoc
           mv README-OLD.adoc README.adoc || true
@@ -68,12 +71,15 @@ jobs:
         with: ${{ fromJSON(steps.issue-form-parser.outputs.payload) }}
       - id: get-input-env
         if: steps.get-mode.outputs.mode == 'script'
+        shell: node --experimental-default-type=module {0}
         run: |
-          input_env=$(echo "$INPUTS" | jq \
-            'to_entries
-            | map({key: "INPUT_" + .key | ascii_upcase, value})
-            | from_entries')
-          echo "input-env=$input_env" >> "$GITHUB_OUTPUT"
+          import { appendFile } from "node:fs/promises";
+          const inputs = JSON.parse(process.env.INPUTS);
+          const inputEnv = { __proto__: null };
+          for (const [name, value] of Object.entries(inputs)) {
+            inputEnv[name] = "INPUT_" + value.toUpperCase();
+          }
+          await appendFile(process.env.GITHUB_OUTPUT, JSON.stringify(inputEnv));
         env:
           INPUTS: ${{ steps.issue-form-parser.outputs.payload }}
       - if: steps.get-mode.outputs.mode == 'script'
