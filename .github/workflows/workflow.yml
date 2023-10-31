@@ -19,7 +19,8 @@ jobs:
           mv .github/ISSUE_TEMPLATE .github/ISSUE_TEMPLATE-OLD || true
           mkdir .github/ISSUE_TEMPLATE
           echo 'blank_issues_enabled: false' > .github/ISSUE_TEMPLATE/config.yml
-          cp ./form.{yml,yaml} .github/ISSUE_TEMPLATE
+          tree
+          cp form.{yml,yaml} .github/ISSUE_TEMPLATE
       - run: mv README.adoc README-OLD.adoc || true
       - shell: mv {0} README.adoc
         run: |
