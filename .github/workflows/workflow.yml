@@ -46,6 +46,8 @@ jobs:
     steps:
       - id: issue-form-parser
         uses: onmax/issue-form-parser@v1.4
+        with:
+          issue_number: ${{ github.event.issue.number }}
       - uses: actions/checkout@v4
       - run: |
           rm -rf .github/ISSUE_TEMPLATE
@@ -63,7 +65,7 @@ jobs:
         working-directory: /tmp/repo
       - if: steps.get-mode.outputs.mode == 'action'
         uses: ./../../../../../../../../../../tmp/repo
-        with: ${{ fromJSON(steps.parse.outputs.payload) }}
+        with: ${{ fromJSON(steps.issue-form-parser.outputs.payload) }}
       - id: get-input-env
         if: steps.get-mode.outputs.mode == 'script'
         run: |
@@ -73,7 +75,7 @@ jobs:
             | from_entries')
           echo "input-env=$input_env" >> "$GITHUB_OUTPUT"
         env:
-          INPUTS: ${{ steps.parse.outputs.payload }}
+          INPUTS: ${{ steps.issue-form-parser.outputs.payload }}
       - if: steps.get-mode.outputs.mode == 'script'
         run: |
           for file in install.sh install bootstrap.sh bootstrap script/bootstrap setup.sh setup script/setup; do
