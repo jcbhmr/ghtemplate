@@ -75,11 +75,9 @@ jobs:
         run: |
           import { appendFile } from "node:fs/promises";
           const inputs = JSON.parse(process.env.INPUTS);
-          const inputEnv = { __proto__: null };
           for (const [name, value] of Object.entries(inputs)) {
-            inputEnv[name] = "INPUT_" + value.toUpperCase();
+            await appendFile(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
           }
-          await appendFile(process.env.GITHUB_OUTPUT, JSON.stringify(inputEnv));
         env:
           INPUTS: ${{ steps.issue-form-parser.outputs.payload }}
       - if: steps.get-mode.outputs.mode == 'script'
